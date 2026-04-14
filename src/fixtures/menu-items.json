@@ -1,0 +1,23 @@
+[
+  {
+    "name": "Home",
+    "path": "/",
+    "hidden": false
+  },
+  {
+    "name": "Paths",
+    "path": "/dashboard/paths",
+    "hidden": false
+  },
+  {
+    "name": "Directory",
+    "path": "/directory",
+    "hidden": false
+  },
+  {
+    "name": "Pricing",
+    "path": "/pricing",
+    "hidden": false
+  }
+]
+

@@ -1,0 +1,277 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat+Alternates:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --font-montserratBold: "Montserrat Alternates", sans-serif;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-montserratBold);
+  --radius: 0.625rem;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  
+  /* Safe area support for mobile devices */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.147 0.004 49.25);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.147 0.004 49.25);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.147 0.004 49.25);
+  --primary: oklch(0.216 0.006 56.043);
+  --primary-foreground: oklch(0.985 0.001 106.423);
+  --secondary: oklch(0.97 0.001 106.424);
+  --secondary-foreground: oklch(0.216 0.006 56.043);
+  --muted: oklch(0.97 0.001 106.424);
+  --muted-foreground: oklch(0.553 0.013 58.071);
+  --accent: oklch(0.97 0.001 106.424);
+  --accent-foreground: oklch(0.216 0.006 56.043);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.923 0.003 48.717);
+  --input: oklch(0.923 0.003 48.717);
+  --ring: oklch(0.709 0.01 56.259);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+}
+
+.dark {
+  --background: oklch(0.147 0.004 49.25);
+  --foreground: oklch(0.985 0.001 106.423);
+  --card: oklch(0.216 0.006 56.043);
+  --card-foreground: oklch(0.985 0.001 106.423);
+  --popover: oklch(0.216 0.006 56.043);
+  --popover-foreground: oklch(0.985 0.001 106.423);
+  --primary: oklch(0.923 0.003 48.717);
+  --primary-foreground: oklch(0.216 0.006 56.043);
+  --secondary: oklch(0.268 0.007 34.298);
+  --secondary-foreground: oklch(0.985 0.001 106.423);
+  --muted: oklch(0.268 0.007 34.298);
+  --muted-foreground: oklch(0.709 0.01 56.259);
+  --accent: oklch(0.268 0.007 34.298);
+  --accent-foreground: oklch(0.985 0.001 106.423);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.553 0.013 58.071);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+}
+
+/* Custom animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+/* Blob animation enhancements */
+.blob-animate-1,
+.blob-animate-2,
+.blob-animate-3 {
+  filter: blur(30px);
+  will-change: d, transform;
+  transform-origin: center;
+}
+
+@supports (filter: blur(40px)) {
+  .blob-animate-1,
+  .blob-animate-2,
+  .blob-animate-3 {
+    transition: filter 0.3s ease;
+  }
+}
+
+/* ============================================
+   React Joyride Tour Styles
+   
+   Note: Based on GitHub issue #419
+   (https://github.com/gilbarbara/react-joyride/issues/419)
+   zIndex from styles.options only applies to __floater and JoyrideBeacon,
+   but NOT to wrapper or span elements. We need to target those via CSS.
+   ============================================ */
+
+/* Prevent body scroll when tour is active */
+body.tour-active {
+  overflow: hidden !important;
+}
+
+/* When tour is active, lower z-index of fixed/sticky navigation elements */
+body.tour-active nav[class*="z-50"],
+body.tour-active nav.z-50,
+body.tour-active [class*="fixed"][class*="z-50"],
+body.tour-active [class*="sticky"][class*="z-50"] {
+  z-index: 40 !important;
+}
+
+/* Ensure tour target elements are visible above lowered nav but below tour */
+body.tour-active [data-tour] {
+  position: relative;
+  z-index: 50 !important;
+}
+
+/* Joyride wrapper and root elements - must have high z-index */
+/* Based on GitHub issue #419: zIndex doesn't apply to wrapper/span elements */
+/* Only set z-index, don't force position to avoid breaking react-floater positioning */
+.react-joyride {
+  z-index: 10000 !important;
+}
+
+/* Target wrapper divs and spans that don't get z-index from styles.options */
+.react-joyride > div {
+  z-index: 10000 !important;
+}
+
+.react-joyride > span {
+  z-index: 10000 !important;
+}
+
+/* Joyride overlay - covers entire viewport with dark blurred background */
+.react-joyride__overlay {
+  z-index: 9998 !important;
+  position: fixed !important;
+}
+
+/* Joyride spotlight - highlights target element */
+/* Fully transparent spotlight area that appears fully lit through the shadow */
+.react-joyride__spotlight {
+  z-index: 9999 !important;
+  position: fixed !important;
+  pointer-events: none !important;
+  box-sizing: border-box !important;
+  background: transparent !important;
+  opacity: .5 !important;
+  mix-blend-mode: normal !important;
+  border-radius: 0.5rem !important;
+  border: 3px solid rgba(255, 255, 255, 1) !important;
+  box-shadow:
+    0 0 0 9999px rgba(0, 0, 0, 0.5),
+    0 0 0 3px rgba(255, 255, 255, 1),
+    0 0 30px 6px rgba(255, 255, 255, 0.8),
+    inset 0 0 20px rgba(255, 255, 255, 0.3) !important;
+  opacity: 1 !important;
+  mix-blend-mode: normal !important;
+  z-index: 9999 !important;
+}
+
+/* Fallback: dark overlay + bright ring around spotlighted area */
+/* The spotlight area itself is fully transparent, appearing fully lit */
+.react-joyride__spotlight:not([style*="box-shadow"]) {
+  background: transparent !important;
+  box-shadow:
+    0 0 0 9999px rgba(0, 0, 0, 0.5),
+    0 0 0 3px rgba(255, 255, 255, 1),
+    0 0 30px 6px rgba(255, 255, 255, 0.8),
+    inset 0 0 20px rgba(255, 255, 255, 0.3) !important;
+  opacity: 1 !important;
+  mix-blend-mode: normal !important;
+  z-index: 9999 !important;
+}
+
+/* Joyride floater (contains tooltip) - must be above everything */
+/* Set background color so tooltip is visible (issue: transparent floater) */
+.__floater {
+  z-index: 10000 !important;
+  background-color: white !important;
+}
+
+.__floater__open {
+  background-color: white !important;
+}
+
+.__floater__body {
+  z-index: 10000 !important;
+  background-color: white !important;
+}
+
+/* Target floater wrapper and any spans inside */
+.__floater > div,
+.__floater > span,
+.__floater__wrapper {
+  z-index: 10000 !important;
+  background-color: white !important;
+}
+
+/* Joyride tooltip - fully opaque, no transparency, highest z-index */
+.react-joyride__tooltip {
+  z-index: 10002 !important;
+  background-color: hsl(var(--background)) !important;
+  opacity: 1 !important;
+  position: relative !important;
+}
+
+.react-joyride__tooltip-container {
+  z-index: 10002 !important;
+  opacity: 1 !important;
+  position: relative !important;
+}
+
+/* Ensure beacon is visible */
+.react-joyride__beacon {
+  z-index: 10001 !important;
+}
+
+/* Target any span elements that might be wrappers (as mentioned in issue #419) */
+.react-joyride span,
+[class*="react-joyride"] span {
+  z-index: inherit !important;
+}

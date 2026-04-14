@@ -1,0 +1,26 @@
+FlowState AI Framework — Personal Use License
+Version 2.9.0
+
+Copyright (c) 2025-2026 Abe Burnett / FlowState AI. All rights reserved.
+
+LICENSE GRANT
+This license grants you, the original purchaser, a non-transferable,
+non-exclusive right to use this framework for personal and commercial
+development projects.
+
+PERMITTED USES
+- Use FlowState to manage your own software development projects
+- Install FlowState in projects you develop for clients
+- Use FlowState on multiple machines you own or control
+
+RESTRICTIONS
+- Do not redistribute, resell, or share this framework
+- Do not post these files publicly or share download links
+- Do not include FlowState files in distributed software packages
+- Do not remove or alter copyright notices
+
+SUPPORT
+For license questions or to request a refreshed download link:
+abe@flowstateai.dev
+
+This license is personal to the original purchaser and may not be transferred.
