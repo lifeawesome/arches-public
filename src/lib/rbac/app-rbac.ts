@@ -1,10 +1,26 @@
 /**
- * New App RBAC Utilities
- * 
- * This module provides Role-Based Access Control (RBAC) utilities for the new app.
- * It uses app_access_level and app_subscription_tier columns, which are separate
- * from the old app's role and subscription_tier columns.
+ * App-wide RBAC (platform identity), not community permissions.
+ *
+ * Product reasoning:
+ * - Arches has two different "who are you here?" problems. This file answers the **platform**
+ *   question: Are you a normal member, internal staff/manager, or platform admin? What **product
+ *   subscription tier** do you pay for (explorer → established)? That drives `/admin`, internal
+ *   tools, pricing gates, and cross-cutting product capabilities.
+ * - **Circles** answer a different question: inside a given community, are you owner, moderator, 
+ *   member, blocked, allowed to post, etc. That logic lives in `src/lib/utils/circles/access-control.ts`
+ *   and circle settings — on purpose. A platform administrator is not automatically a circle
+ *   owner; a paying subscriber can still be kicked from a circle. Mixing those models in one
+ *   column would make both product rules and security reviews painful.
+ * - `app_access_level` / `app_subscription_tier` are separate from legacy `role` /
+ *   `subscription_tier` columns so we can migrate and reason about the new app without breaking
+ *   old data assumptions in one shot.
+ *
+ * Rule of thumb: if the question is "Arches the product vs this user," use this module; if it's
+ * "this circle vs this user," use circle access control.
  */
+
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/types_db";
 
 export type AppAccessLevel = 'user' | 'manager' | 'administrator';
 export type AppSubscriptionTier = 'explorer' | 'practitioner' | 'professional' | 'established';
@@ -14,6 +30,13 @@ export interface AppRBACProfile {
   app_access_level: AppAccessLevel;
   app_subscription_tier: AppSubscriptionTier;
 }
+
+/** Shape of `profiles` columns we read in this module (stub `Database` types don’t narrow `.from()` well). */
+type ProfileRbacRow = {
+  id: string;
+  app_access_level: string | null;
+  app_subscription_tier: string | null;
+};
 
 const ACCESS_LEVEL_HIERARCHY: Record<AppAccessLevel, number> = {
   user: 1,
@@ -61,7 +84,7 @@ export function hasAppSubscriptionTier(
  * @returns AppRBACProfile or null if not found
  */
 export async function getAppRBACProfile(
-  supabase: any,
+  supabase: SupabaseClient<Database>,
   userId: string
 ): Promise<AppRBACProfile | null> {
   const { data, error } = await supabase
@@ -73,11 +96,14 @@ export async function getAppRBACProfile(
   if (error || !data) {
     return null;
   }
-  
+
+  // `SupabaseClient<Database>` + stub `types_db` can infer `data` as `never` here; narrow via `unknown`.
+  const row = data as unknown as ProfileRbacRow;
+
   return {
-    id: data.id,
-    app_access_level: (data.app_access_level || 'user') as AppAccessLevel,
-    app_subscription_tier: (data.app_subscription_tier || 'explorer') as AppSubscriptionTier,
+    id: row.id,
+    app_access_level: (row.app_access_level || "user") as AppAccessLevel,
+    app_subscription_tier: (row.app_subscription_tier || "explorer") as AppSubscriptionTier,
   };
 }
 
@@ -86,7 +112,9 @@ export async function getAppRBACProfile(
  * @param supabase - Supabase client instance
  * @returns true if user is administrator
  */
-export async function isAppAdministrator(supabase: any): Promise<boolean> {
+export async function isAppAdministrator(
+  supabase: SupabaseClient<Database>
+): Promise<boolean> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return false;
   
@@ -99,7 +127,9 @@ export async function isAppAdministrator(supabase: any): Promise<boolean> {
  * @param supabase - Supabase client instance
  * @returns true if user is manager or administrator
  */
-export async function isAppManagerOrAdmin(supabase: any): Promise<boolean> {
+export async function isAppManagerOrAdmin(
+  supabase: SupabaseClient<Database>
+): Promise<boolean> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return false;
   
@@ -116,7 +146,7 @@ export async function isAppManagerOrAdmin(supabase: any): Promise<boolean> {
  * @returns true if user has required tier or higher
  */
 export async function hasRequiredSubscriptionTier(
-  supabase: any,
+  supabase: SupabaseClient<Database>,
   requiredTier: AppSubscriptionTier
 ): Promise<boolean> {
   const { data: { user } } = await supabase.auth.getUser();

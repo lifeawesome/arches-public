@@ -35,7 +35,7 @@
     "@sentry/nextjs": "^10.46.0",
     "@stripe/stripe-js": "^8.7.0",
     "@supabase/ssr": "0.8.0",
-    "@supabase/supabase-js": "2.49.3",
+    "@supabase/supabase-js": "^2.76.1",
     "@types/react-joyride": "^2.0.5",
     "Card": "link:@/components/ui/Card",
     "class-variance-authority": "^0.7.1",
