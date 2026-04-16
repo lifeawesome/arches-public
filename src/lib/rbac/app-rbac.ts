@@ -1,29 +1,37 @@
 /**
  * App-wide RBAC (platform identity), not community permissions.
  *
- * Product reasoning:
- * - Arches has two different "who are you here?" problems. This file answers the **platform**
- *   question: Are you a normal member, internal staff/manager, or platform admin? What **product
- *   subscription tier** do you pay for (explorer → established)? That drives `/admin`, internal
- *   tools, pricing gates, and cross-cutting product capabilities.
- * - **Circles** answer a different question: inside a given community, are you owner, moderator, 
- *   member, blocked, allowed to post, etc. That logic lives in `src/lib/utils/circles/access-control.ts`
- *   and circle settings — on purpose. A platform administrator is not automatically a circle
- *   owner; a paying subscriber can still be kicked from a circle. Mixing those models in one
- *   column would make both product rules and security reviews painful.
- * - `app_access_level` / `app_subscription_tier` are separate from legacy `role` /
- *   `subscription_tier` columns so we can migrate and reason about the new app without breaking
- *   old data assumptions in one shot.
+ * I think of Arches as having two separate questions we never want to smush together. First:
+ * "What kind of Arches customer are you, and what did you buy?" — regular user, someone on our
+ * team with extra internal access, platform admin, and which subscription tier you're on. That's
+ * what I use this file for: the stuff that powers admin areas, pricing, and anything that applies
+ * to you as an Arches account, not as a member of one specific group.
  *
- * Rule of thumb: if the question is "Arches the product vs this user," use this module; if it's
- * "this circle vs this user," use circle access control.
+ * Second question: "Inside this particular circle, who are you?" — owner, moderator, member, can
+ * you post, were you blocked, all of that. That lives elsewhere (`access-control.ts`) because it's
+ * community rules, not "your relationship to Arches the company." I keep them apart on purpose:
+ * our own admins aren't secretly mods of every community, and someone paying us doesn't get a free
+ * pass to ignore a circle's rules. If we stored both ideas in one place, we'd confuse people and
+ * we'd ship bugs.
+ *
+ * The columns here (`app_access_level`, `app_subscription_tier`) are also intentionally separate
+ * from older legacy fields so we could move to the new model without breaking historical data in
+ * one risky cutover.
+ *
+ * TL;DR for engineers:
+ * "Arches vs this user" → use this module's functions;
+ * "this circle vs this user" → use access-control.ts instead.
  */
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types_db";
 
-export type AppAccessLevel = 'user' | 'manager' | 'administrator';
-export type AppSubscriptionTier = 'explorer' | 'practitioner' | 'professional' | 'established';
+export type AppAccessLevel = "user" | "manager" | "administrator";
+export type AppSubscriptionTier =
+  | "explorer"
+  | "practitioner"
+  | "professional"
+  | "established";
 
 export interface AppRBACProfile {
   id: string;
@@ -59,9 +67,11 @@ const SUBSCRIPTION_TIER_HIERARCHY: Record<AppSubscriptionTier, number> = {
  */
 export function hasAppAccessLevel(
   userLevel: AppAccessLevel,
-  requiredLevel: AppAccessLevel
+  requiredLevel: AppAccessLevel,
 ): boolean {
-  return ACCESS_LEVEL_HIERARCHY[userLevel] >= ACCESS_LEVEL_HIERARCHY[requiredLevel];
+  return (
+    ACCESS_LEVEL_HIERARCHY[userLevel] >= ACCESS_LEVEL_HIERARCHY[requiredLevel]
+  );
 }
 
 /**
@@ -72,9 +82,12 @@ export function hasAppAccessLevel(
  */
 export function hasAppSubscriptionTier(
   userTier: AppSubscriptionTier,
-  requiredTier: AppSubscriptionTier
+  requiredTier: AppSubscriptionTier,
 ): boolean {
-  return SUBSCRIPTION_TIER_HIERARCHY[userTier] >= SUBSCRIPTION_TIER_HIERARCHY[requiredTier];
+  return (
+    SUBSCRIPTION_TIER_HIERARCHY[userTier] >=
+    SUBSCRIPTION_TIER_HIERARCHY[requiredTier]
+  );
 }
 
 /**
@@ -85,14 +98,14 @@ export function hasAppSubscriptionTier(
  */
 export async function getAppRBACProfile(
   supabase: SupabaseClient<Database>,
-  userId: string
+  userId: string,
 ): Promise<AppRBACProfile | null> {
   const { data, error } = await supabase
-    .from('profiles')
-    .select('id, app_access_level, app_subscription_tier')
-    .eq('id', userId)
+    .from("profiles")
+    .select("id, app_access_level, app_subscription_tier")
+    .eq("id", userId)
     .single();
-  
+
   if (error || !data) {
     return null;
   }
@@ -103,7 +116,8 @@ export async function getAppRBACProfile(
   return {
     id: row.id,
     app_access_level: (row.app_access_level || "user") as AppAccessLevel,
-    app_subscription_tier: (row.app_subscription_tier || "explorer") as AppSubscriptionTier,
+    app_subscription_tier: (row.app_subscription_tier ||
+      "explorer") as AppSubscriptionTier,
   };
 }
 
@@ -113,13 +127,15 @@ export async function getAppRBACProfile(
  * @returns true if user is administrator
  */
 export async function isAppAdministrator(
-  supabase: SupabaseClient<Database>
+  supabase: SupabaseClient<Database>,
 ): Promise<boolean> {
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return false;
-  
+
   const profile = await getAppRBACProfile(supabase, user.id);
-  return profile?.app_access_level === 'administrator';
+  return profile?.app_access_level === "administrator";
 }
 
 /**
@@ -128,15 +144,17 @@ export async function isAppAdministrator(
  * @returns true if user is manager or administrator
  */
 export async function isAppManagerOrAdmin(
-  supabase: SupabaseClient<Database>
+  supabase: SupabaseClient<Database>,
 ): Promise<boolean> {
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return false;
-  
+
   const profile = await getAppRBACProfile(supabase, user.id);
   if (!profile) return false;
-  
-  return hasAppAccessLevel(profile.app_access_level, 'manager');
+
+  return hasAppAccessLevel(profile.app_access_level, "manager");
 }
 
 /**
@@ -147,14 +165,15 @@ export async function isAppManagerOrAdmin(
  */
 export async function hasRequiredSubscriptionTier(
   supabase: SupabaseClient<Database>,
-  requiredTier: AppSubscriptionTier
+  requiredTier: AppSubscriptionTier,
 ): Promise<boolean> {
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return false;
-  
+
   const profile = await getAppRBACProfile(supabase, user.id);
   if (!profile) return false;
-  
+
   return hasAppSubscriptionTier(profile.app_subscription_tier, requiredTier);
 }
-
